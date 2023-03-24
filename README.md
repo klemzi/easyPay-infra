@@ -1,2 +1,2 @@
 # easyPay-infra
-EasyPay Infrastructure
+EasyPay Infrastructure --> Simplilearn final capstone project.
