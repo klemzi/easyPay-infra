@@ -4,17 +4,17 @@ variable "environment" {
 
 ################### VPC ####################
 variable "vpc_create" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "vpc_name" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.0.0.0/16"
 }
 
@@ -23,16 +23,16 @@ variable "azs" {
 }
 
 variable "private_subnets" {
-  type =  list(string)
+  type    = list(string)
   default = []
 }
 
 variable "public_subnets" {
-  type =  list(string)
+  type    = list(string)
   default = []
 }
 
 variable "tags" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }
