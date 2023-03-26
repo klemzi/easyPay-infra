@@ -16,9 +16,9 @@ tags = {
 ################ Control plane ###############
 
 cp_template = {
-  ami = "ami-0557a15b87f6559cf"
+  ami           = "ami-0557a15b87f6559cf"
   instance_type = "t2.micro"
-  key_name = "easypay-key"
+  key_name      = "easypay-key"
 }
 # one control plane
 cp_names = ["cp-1"]
@@ -26,9 +26,9 @@ cp_names = ["cp-1"]
 ################## nodes #####################
 
 node_template = {
-  ami = "ami-0557a15b87f6559cf"
+  ami           = "ami-0557a15b87f6559cf"
   instance_type = "t3.micro"
-  key_name = "easypay-key"
+  key_name      = "easypay-key"
 }
 # 2 nodes
 node_names = ["node-1", "node-2"]

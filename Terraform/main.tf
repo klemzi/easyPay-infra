@@ -1,7 +1,7 @@
 locals {
   # ref --> https://kubernetes.io/docs/reference/networking/ports-and-protocols/
-  cp_rules = csvdecode(file("./csv-configs/rules/cp.csv"))
-  node_rules = csvdecode(file("./csv-configs/rules/node.csv"))
+  cp_rules      = csvdecode(file("./csv-configs/rules/cp.csv"))
+  node_rules    = csvdecode(file("./csv-configs/rules/node.csv"))
   anywhere_ipv4 = "0.0.0.0/0"
   anywhere_ipv6 = "::/0"
 }
@@ -87,10 +87,10 @@ resource "aws_security_group" "cp_sg" {
   }
 
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = [local.anywhere_ipv4]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [local.anywhere_ipv4]
   }
 
   tags = {
@@ -101,20 +101,20 @@ resource "aws_security_group" "cp_sg" {
 resource "aws_security_group" "cp_http_allow" {
   name        = "lb-allow-http"
   description = "allow http to lb"
-  
+
   ingress {
     description = "allow http to lb"
-    cidr_blocks     = [local.anywhere_ipv4]
-    from_port       = 80
-    to_port         = 80
-    protocol        = "-1"
+    cidr_blocks = [local.anywhere_ipv4]
+    from_port   = 80
+    to_port     = 80
+    protocol    = "-1"
   }
 
   egress {
-    cidr_blocks     = [local.anywhere_ipv4]
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
+    cidr_blocks = [local.anywhere_ipv4]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
   }
 
   tags = {
@@ -130,19 +130,19 @@ resource "aws_security_group" "node_sg" {
   dynamic "ingress" {
     for_each = local.node_rules
     content {
-      description     = ingress.value.description
-      from_port       = ingress.value.start
-      to_port         = ingress.value.end
-      protocol        = "tcp"
+      description = ingress.value.description
+      from_port   = ingress.value.start
+      to_port     = ingress.value.end
+      protocol    = "tcp"
       cidr_blocks = var.node_public ? [local.anywhere_ipv4] : [var.vpc_cidr]
     }
   }
 
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = [local.anywhere_ipv4]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [local.anywhere_ipv4]
   }
 
   tags = {
