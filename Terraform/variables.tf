@@ -36,3 +36,63 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+
+##################### EC2 Control plane #####################
+variable "cp_template" {
+  type = object({
+    ami           = string
+    instance_type = string
+    key_name      = string
+  })
+
+  default = {
+    ami           = "ami-09cd747c78a9add63"
+    instance_type = "t2.micro"
+    key_name      = "cp-key"
+  }
+}
+
+variable "cp_names" {
+  type        = set(string)
+  description = "list of dinstinct control plane instance name"
+  default     = ["cp-plane-1"]
+}
+
+variable "cp_tags" {
+  type    = map(string)
+  default = {}
+}
+
+##################### EC2 node #####################
+
+variable "node_template" {
+  type = object({
+    ami           = string
+    instance_type = string
+    key_name      = string
+  })
+
+  default = {
+    ami           = "ami-09cd747c78a9add63"
+    instance_type = "t3.micro"
+    key_name      = "node-key"
+  }
+}
+
+variable "node_names" {
+  type        = set(string)
+  description = "list of dinstinct control plane instance name"
+  default     = ["node-1"]
+}
+
+variable "node_tags" {
+  type    = map(string)
+  default = {}
+}
+
+variable "node_public" {
+  type        = bool
+  description = "if nodes to be accessible to the public"
+  default     = false
+}
