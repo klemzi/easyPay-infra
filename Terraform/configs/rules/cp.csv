@@ -1,0 +1,6 @@
+start,end,description
+6443,6443,Kubernetes API server
+2379,2380,etcd server client API
+10250,10250,Kubelet API
+10259,10259,kube-scheduler
+10257,10257,kube-controller-manager

@@ -1,0 +1,3 @@
+start,end,description
+10250,10250,Kubelet API
+30000,32767,NodePort Services
