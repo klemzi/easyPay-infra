@@ -1,9 +1,10 @@
 locals {
   # ref --> https://kubernetes.io/docs/reference/networking/ports-and-protocols/
-  cp_rules      = csvdecode(file("./csv-configs/rules/cp.csv"))
-  node_rules    = csvdecode(file("./csv-configs/rules/node.csv"))
-  anywhere_ipv4 = "0.0.0.0/0"
-  anywhere_ipv6 = "::/0"
+  cp_rules       = csvdecode(file("./configs/rules/cp.csv"))
+  node_rules     = csvdecode(file("./configs/rules/node.csv"))
+  ssh_public_key = base64decode(file("./configs/pb-key/easypay"))
+  anywhere_ipv4  = "0.0.0.0/0"
+  anywhere_ipv6  = "::/0"
 }
 
 # vpc module
@@ -25,6 +26,12 @@ module "vpc" {
 }
 
 # ec2 module
+
+resource "aws_key_pair" "ssh_key" {
+  key_name   = var.cp_template.key_name
+  public_key = local.ssh_public_key
+}
+
 module "ec2-cp" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "4.3.0"
@@ -35,9 +42,9 @@ module "ec2-cp" {
 
   ami                    = var.cp_template.ami
   instance_type          = var.cp_template.instance_type
-  key_name               = var.cp_template.key_name
+  key_name               = aws_key_pair.ssh_key.key_name
   monitoring             = true
-  vpc_security_group_ids = []
+  vpc_security_group_ids = [aws_security_group.cp_sg.id]
   subnet_id              = module.vpc.public_subnets[index(tolist(var.cp_names), each.value) % length(module.vpc.public_subnets)]
 
   tags = merge({
@@ -101,13 +108,13 @@ resource "aws_security_group" "cp_sg" {
 resource "aws_security_group" "cp_http_allow" {
   name        = "lb-allow-http"
   description = "allow http to lb"
-
+  vpc_id      = module.vpc.vpc_id
   ingress {
     description = "allow http to lb"
     cidr_blocks = [local.anywhere_ipv4]
     from_port   = 80
     to_port     = 80
-    protocol    = "-1"
+    protocol    = "tcp"
   }
 
   egress {
