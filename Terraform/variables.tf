@@ -1,5 +1,6 @@
 variable "environment" {
-  type = string
+  type    = string
+  default = "dev"
 }
 
 ################### VPC ####################
@@ -16,20 +17,6 @@ variable "vpc_name" {
 variable "vpc_cidr" {
   type    = string
   default = "10.0.0.0/16"
-}
-
-variable "azs" {
-  type = list(string)
-}
-
-variable "private_subnets" {
-  type    = list(string)
-  default = []
-}
-
-variable "public_subnets" {
-  type    = list(string)
-  default = []
 }
 
 variable "tags" {
@@ -70,13 +57,11 @@ variable "node_template" {
   type = object({
     ami           = string
     instance_type = string
-    key_name      = string
   })
 
   default = {
     ami           = "ami-09cd747c78a9add63"
     instance_type = "t3.micro"
-    key_name      = "node-key"
   }
 }
 
