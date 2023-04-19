@@ -29,6 +29,8 @@ module "vpc" {
   enable_nat_gateway = true # private subnet access to the internet
   single_nat_gateway = true # we just need one shared NAT for now
 
+  enable_dns_hostnames = true
+
   tags = merge({
     Terraform   = "true"
     Environment = var.environment
@@ -138,6 +140,14 @@ resource "aws_security_group" "cp_sg" {
     security_groups = [aws_security_group.baston_ssh_allow.id]
   }
 
+  ingress {
+    description     = "allow ping from baston"
+    from_port       = -1
+    to_port         = -1
+    protocol        = "icmp"
+    security_groups = [aws_security_group.baston_ssh_allow.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -221,6 +231,14 @@ resource "aws_security_group" "node_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
+    security_groups = [aws_security_group.baston_ssh_allow.id]
+  }
+
+  ingress {
+    description     = "allow ping from baston"
+    from_port       = -1
+    to_port         = -1
+    protocol        = "icmp"
     security_groups = [aws_security_group.baston_ssh_allow.id]
   }
 
