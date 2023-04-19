@@ -1,0 +1,10 @@
+plugin: aws_ec2
+regions: us-east-1
+aws_profile: default
+filters:
+  instance-state-name: running
+groups:
+  control-plane: tags.instance == 'control-plane'
+  nodes: tags.instance == 'node'
+compose:
+  ansible_host: private_ip_address
