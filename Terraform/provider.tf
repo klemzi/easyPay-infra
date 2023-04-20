@@ -1,3 +1,5 @@
 provider "aws" {
-  profile = "simplilearn"
+  access_key = "ASIAQV7L5ZIHDJLERMVB"
+  secret_key = "N5Qjh+/ky7twokjVdMRUoAIZGWZN1eqlRT1hdBfJ"
+  token = "FwoGZXIvYXdzEKr//////////wEaDLhCbvJYouj2wUR5hCK1AVBAWxq2CnSKu7hO75hd7oDM/vHKYHLEDUlXLiMlZbcYg7JDhHLL7cu4/SZlGED5uPxANjPTlKbwJzaty2T4swEinNn1QqcnKnaBQbgJEMqSsK4THW9QKarfYiq1iZqF7lOHCafl1mVJcW1RkYMVxcJ28VRQnPa43ur/L3wVyLn5XoEJEiEz7Z0D6EmC7bfALXodNlhMcM9K+errwPXPkKorgfI1I4X/y9tBWFDUrK4Kzovw7/wo99aFogYyLYJmgoARCPBVU4zHDuWbMmGozy/kvWg2B9ETXSF28o9i988SnFB8qnn0VhXB7g=="
 }
