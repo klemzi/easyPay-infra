@@ -1,0 +1,12 @@
+- name: kubernetes setup
+  hosts: all
+  vars:
+    kubernetes_allow_pods_on_control_plane: false
+    kubernetes_pod_network: # Calico CNI.
+      cni: 'calico'
+      cidr: '192.168.0.0/16'
+
+
+  roles:
+    - geerlingguy.docker
+    - geerlingguy.kubernetes
