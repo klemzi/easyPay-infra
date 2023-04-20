@@ -1,5 +1,5 @@
-#! /bin/bash
-sudo apt update
-sudo apt install ansible
-sudo apt install python3-pip
+#!/bin/bash
+apt-get update -y
+apt-get install -y ansible
+apt-get install -y python3-pip
 pip3 install boto3
