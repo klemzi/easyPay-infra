@@ -1,11 +1,12 @@
-- name: kubernetes setup
+# Role only tested with one control plane and more nodes
+# this is fine with what is requested from the captsone
+- name: Kubernetes setup
   hosts: all
   vars:
-    kubernetes_allow_pods_on_control_plane: false
-    kubernetes_pod_network: # Calico CNI.
+    kubernetes_allow_pods_on_control_plane: false # control plane will be tainted
+    kubernetes_pod_network: # Use Calico CNI. The default is Flannel
       cni: 'calico'
       cidr: '192.168.0.0/16'
-
 
   roles:
     - geerlingguy.docker
