@@ -1,3 +1,3 @@
 provider "aws" {
-  profile = "easypay"
+  profile = "devops"
 }
