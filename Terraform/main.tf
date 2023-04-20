@@ -5,6 +5,7 @@ locals {
   cluster_ssh_key    = base64decode(file("./configs/pb-key/easypay"))
   baston_ssh_key     = base64decode(file("./configs/pb-key/baston"))
   baston_role_policy = file("./configs/policies/ec2ReadOnlyAccess.json")
+  install_ansible    = file("./configs/setups/ansible_install.sh")
   anywhere_ipv4      = "0.0.0.0/0"
   anywhere_ipv6      = "::/0"
   azs                = slice(data.aws_availability_zones.azs.names, 0, 2)
@@ -145,6 +146,8 @@ module "baston-server" {
   vpc_security_group_ids = [aws_security_group.baston_ssh_allow.id]
   subnet_id              = module.vpc.public_subnets[0] # stay in just one public subnet for now
   iam_instance_profile   = aws_iam_instance_profile.baston-profile.name
+
+  user_data = local.install_ansible
 
   tags = {
     Terraform   = "true"
