@@ -1,17 +1,54 @@
 locals {
   # ref --> https://kubernetes.io/docs/reference/networking/ports-and-protocols/
-  cp_rules        = csvdecode(file("./configs/rules/cp.csv"))
-  node_rules      = csvdecode(file("./configs/rules/node.csv"))
-  cluster_ssh_key = base64decode(file("./configs/pb-key/easypay"))
-  baston_ssh_key  = base64decode(file("./configs/pb-key/baston"))
-  anywhere_ipv4   = "0.0.0.0/0"
-  anywhere_ipv6   = "::/0"
-  azs             = slice(data.aws_availability_zones.azs.names, 0, 2)
+  cp_rules           = csvdecode(file("./configs/rules/cp.csv"))
+  node_rules         = csvdecode(file("./configs/rules/node.csv"))
+  cluster_ssh_key    = base64decode(file("./configs/pb-key/easypay"))
+  baston_ssh_key     = base64decode(file("./configs/pb-key/baston"))
+  baston_role_policy = file("./configs/policies/ec2ReadOnlyAccess.json")
+  install_ansible    = file("./configs/setups/ansible_install.sh")
+  anywhere_ipv4      = "0.0.0.0/0"
+  anywhere_ipv6      = "::/0"
+  azs                = slice(data.aws_availability_zones.azs.names, 0, 2)
 }
 
 # get availability zones
 data "aws_availability_zones" "azs" {
   state = "available"
+}
+
+# baston role for ansible dynamic inventory
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role_policy" "ec2-describe-only" {
+  name = "ec2-describe-only"
+
+  role   = aws_iam_role.baston_role.id
+  policy = local.baston_role_policy
+}
+
+resource "aws_iam_role" "baston_role" {
+  name = "baston-role"
+
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+# instance profile for baston server
+
+resource "aws_iam_instance_profile" "baston-profile" {
+  name = "baston-profile"
+
+  role = aws_iam_role.baston_role.id
 }
 
 # vpc module
@@ -28,6 +65,8 @@ module "vpc" {
 
   enable_nat_gateway = true # private subnet access to the internet
   single_nat_gateway = true # we just need one shared NAT for now
+
+  enable_dns_hostnames = true
 
   tags = merge({
     Terraform   = "true"
@@ -106,6 +145,9 @@ module "baston-server" {
   monitoring             = true
   vpc_security_group_ids = [aws_security_group.baston_ssh_allow.id]
   subnet_id              = module.vpc.public_subnets[0] # stay in just one public subnet for now
+  iam_instance_profile   = aws_iam_instance_profile.baston-profile.name
+
+  user_data = local.install_ansible
 
   tags = {
     Terraform   = "true"
@@ -135,6 +177,14 @@ resource "aws_security_group" "cp_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
+    security_groups = [aws_security_group.baston_ssh_allow.id]
+  }
+
+  ingress {
+    description     = "allow ping from baston"
+    from_port       = -1
+    to_port         = -1
+    protocol        = "icmp"
     security_groups = [aws_security_group.baston_ssh_allow.id]
   }
 
@@ -221,6 +271,14 @@ resource "aws_security_group" "node_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
+    security_groups = [aws_security_group.baston_ssh_allow.id]
+  }
+
+  ingress {
+    description     = "allow ping from baston"
+    from_port       = -1
+    to_port         = -1
+    protocol        = "icmp"
     security_groups = [aws_security_group.baston_ssh_allow.id]
   }
 
