@@ -181,6 +181,14 @@ resource "aws_security_group" "cp_sg" {
   }
 
   ingress {
+    description     = "allow access to api server"
+    from_port       = 6443
+    to_port         = 6443
+    protocol        = "tcp"
+    cidr_blocks     = [local.anywhere_ipv4]
+  }
+
+  ingress {
     description     = "allow ping from baston"
     from_port       = -1
     to_port         = -1
@@ -197,6 +205,8 @@ resource "aws_security_group" "cp_sg" {
 
   tags = {
     Name = "allow_cp_ports"
+    Terraform   = "true"
+    Environment = var.environment
   }
 }
 
@@ -222,6 +232,8 @@ resource "aws_security_group" "cp_http_allow" {
 
   tags = {
     Name = "lb Public"
+    Terraform   = "true"
+    Environment = var.environment
   }
 }
 
@@ -247,6 +259,8 @@ resource "aws_security_group" "baston_ssh_allow" {
 
   tags = {
     Name = "baston ssh allow"
+    Terraform   = "true"
+    Environment = var.environment
   }
 }
 
@@ -291,50 +305,56 @@ resource "aws_security_group" "node_sg" {
 
   tags = {
     Name = "allow_node_ports"
+    Terraform   = "true"
+    Environment = var.environment
   }
 }
 
-# module "easypay-lb" {
-#   source  = "terraform-aws-modules/alb/aws"
-#   version = "8.6.0"
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "8.6.0"
 
-#   name = "easypay-alb"
+  name = "easypay-alb"
 
-#   load_balancer_type = "application"
+  load_balancer_type = "network"
 
-#   vpc_id  = module.vpc.vpc_id
-#   subnets = [module.vpc.public_subnets[0], module.vpc.public_subnets[1]]
+  vpc_id  = module.vpc.vpc_id
 
-#   target_groups = [
-#     {
-#       name_prefix      = "pref-"
-#       backend_protocol = "TCP"
-#       backend_port     = 6443
-#       target_type      = "instance"
-#     }
-#   ]
+  subnet_mapping = [{
+    subnet_id = module.vpc.public_subnets[0]
+    allocation_id = aws_eip.alb_ip.id
+  }]
 
-#   https_listeners = [
-#     {
-#       port               = 443
-#       protocol           = "TLS"
-#       certificate_arn    = "arn:aws:iam::123456789012:server-certificate/test_cert-123456789012"
-#       target_group_index = 0
-#       target_groups = {
+  target_groups = [
+    {
+      backend_protocol = "TCP"
+      backend_port     = 80
+      target_type      = "instance"
+      deregistration_delay  = 10
+      load_balancing_cross_zone_enabled = false
+      targets = {for name in var.node_names : name => {target_id = module.ec2-nodes[name].id, port = 30050}}
+    }
+  ]
 
-#       }
-#     }
-#   ]
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "TCP"
+      target_group_index = 0
+    }
+  ]
 
-#   http_tcp_listeners = [
-#     {
-#       port               = 80
-#       protocol           = "TCP"
-#       target_group_index = 0
-#     }
-#   ]
+  tags = {
+    Terraform   = "true"
+    Environment = var.environment
+  }
+}
 
-#   tags = {
-#     Environment = "Test"
-#   }
-# }
+
+resource "aws_eip" "alb_ip" {
+  tags = {
+    Name = "easypay-ip"
+    Terraform   = "true"
+    Environment = var.environment
+  }
+}
