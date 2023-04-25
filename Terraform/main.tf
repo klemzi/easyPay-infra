@@ -310,7 +310,8 @@ resource "aws_security_group" "node_sg" {
   }
 }
 
-module "alb" {
+# nlb module
+module "nlb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "8.6.0"
 
@@ -350,7 +351,7 @@ module "alb" {
   }
 }
 
-
+# elastic ip for nlb
 resource "aws_eip" "alb_ip" {
   tags = {
     Name = "easypay-ip"
