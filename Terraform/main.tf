@@ -359,3 +359,14 @@ resource "aws_eip" "alb_ip" {
     Environment = var.environment
   }
 }
+
+# ECR repository
+resource "aws_ecr_repository" "easypay-repo" {
+  name                 = "easypay-repo"
+  image_tag_mutability = "MUTABLE"
+
+  force_delete = true # so it deletes the repo if not empty as well
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
