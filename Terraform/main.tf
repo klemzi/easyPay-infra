@@ -185,7 +185,7 @@ resource "aws_security_group" "cp_sg" {
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
-    cidr_blocks = [local.anywhere_ipv4]
+    security_groups = [aws_security_group.baston_ssh_allow.id]
   }
 
   ingress {
