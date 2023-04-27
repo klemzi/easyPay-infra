@@ -99,7 +99,7 @@ module "ec2_cp" {
   key_name               = aws_key_pair.ssh_key.key_name
   monitoring             = true
   vpc_security_group_ids = [aws_security_group.cp_sg.id]
-  subnet_id              = module.vpc.public_subnets[index(tolist(var.cp_names), each.value) % length(module.vpc.public_subnets)]
+  subnet_id              = module.vpc.private_subnets[index(tolist(var.cp_names), each.value) % length(module.vpc.private_subnets)]
 
   tags = merge({
     Terraform   = "true"
@@ -375,8 +375,8 @@ output "easypay_dns" {
   value = aws_eip.nlb_ip.public_dns
 }
 
-output "cluster_dns" {
-  value = module.ec2_cp[tolist(var.cp_names)[0]].public_dns
+output "cluster_ip" {
+  value = module.ec2_cp[tolist(var.cp_names)[0]].private_ip
 }
 
 output "baston_ip" {
