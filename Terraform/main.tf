@@ -168,7 +168,7 @@ resource "aws_security_group" "cp_sg" {
       from_port       = ingress.value.start
       to_port         = ingress.value.end
       protocol        = "tcp"
-      security_groups = [aws_security_group.node_sg.id, aws_security_group.cp_http_allow.id]
+      security_groups = [aws_security_group.node_sg.id]
     }
   }
 
@@ -285,7 +285,7 @@ resource "aws_security_group" "node_sg" {
     from_port       = 30050
     to_port         = 30050
     protocol        = "tcp"
-    security_groups = [aws_security_group.baston_ssh_allow.id]    
+    security_groups = [aws_security_group.baston_ssh_allow.id, aws_security_group.cp_http_allow.id]   
   }
 
   ingress {
@@ -336,6 +336,8 @@ module "nlb" {
     subnet_id     = module.vpc.private_subnets[1]
     allocation_id = aws_eip.nlb_ip_2.id
   }]
+
+  security_groups = [ aws_security_group.cp_http_allow.id ]
 
   target_groups = [
     {
