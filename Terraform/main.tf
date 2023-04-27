@@ -181,11 +181,11 @@ resource "aws_security_group" "cp_sg" {
   }
 
   ingress {
-    description     = "allow access to api server"
-    from_port       = 6443
-    to_port         = 6443
-    protocol        = "tcp"
-    cidr_blocks     = [local.anywhere_ipv4]
+    description = "allow access to api server"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = [local.anywhere_ipv4]
   }
 
   ingress {
@@ -204,7 +204,7 @@ resource "aws_security_group" "cp_sg" {
   }
 
   tags = {
-    Name = "allow_cp_ports"
+    Name        = "allow_cp_ports"
     Terraform   = "true"
     Environment = var.environment
   }
@@ -231,7 +231,7 @@ resource "aws_security_group" "cp_http_allow" {
   }
 
   tags = {
-    Name = "lb Public"
+    Name        = "lb Public"
     Terraform   = "true"
     Environment = var.environment
   }
@@ -258,7 +258,7 @@ resource "aws_security_group" "baston_ssh_allow" {
   }
 
   tags = {
-    Name = "baston ssh allow"
+    Name        = "baston ssh allow"
     Terraform   = "true"
     Environment = var.environment
   }
@@ -304,7 +304,7 @@ resource "aws_security_group" "node_sg" {
   }
 
   tags = {
-    Name = "allow_node_ports"
+    Name        = "allow_node_ports"
     Terraform   = "true"
     Environment = var.environment
   }
@@ -319,21 +319,21 @@ module "nlb" {
 
   load_balancer_type = "network"
 
-  vpc_id  = module.vpc.vpc_id
+  vpc_id = module.vpc.vpc_id
 
   subnet_mapping = [{
-    subnet_id = module.vpc.public_subnets[0]
+    subnet_id     = module.vpc.public_subnets[0]
     allocation_id = aws_eip.alb_ip.id
   }]
 
   target_groups = [
     {
-      backend_protocol = "TCP"
-      backend_port     = 80
-      target_type      = "instance"
-      deregistration_delay  = 10
+      backend_protocol                  = "TCP"
+      backend_port                      = 80
+      target_type                       = "instance"
+      deregistration_delay              = 10
       load_balancing_cross_zone_enabled = false
-      targets = {for name in var.node_names : name => {target_id = module.ec2_nodes[name].id, port = 30050}}
+      targets                           = { for name in var.node_names : name => { target_id = module.ec2_nodes[name].id, port = 30050 } }
     }
   ]
 
@@ -354,7 +354,7 @@ module "nlb" {
 # elastic ip for nlb
 resource "aws_eip" "nlb_ip" {
   tags = {
-    Name = "easypay-ip"
+    Name        = "easypay-ip"
     Terraform   = "true"
     Environment = var.environment
   }
