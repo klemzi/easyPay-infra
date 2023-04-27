@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_role_policy" "ec2-describe-only" {
+resource "aws_iam_role_policy" "ec2_describe_only" {
   name = "ec2-describe-only"
 
   role   = aws_iam_role.baston_role.id
@@ -45,7 +45,7 @@ resource "aws_iam_role" "baston_role" {
 
 # instance profile for baston server
 
-resource "aws_iam_instance_profile" "baston-profile" {
+resource "aws_iam_instance_profile" "baston_profile" {
   name = "baston-profile"
 
   role = aws_iam_role.baston_role.id
@@ -86,7 +86,7 @@ resource "aws_key_pair" "baston_ssh_key" {
 }
 
 # ec2 module
-module "ec2-cp" {
+module "ec2_cp" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "4.3.0"
 
@@ -110,7 +110,7 @@ module "ec2-cp" {
 
 
 # ec2 module
-module "ec2-nodes" {
+module "ec2_nodes" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "4.3.0"
 
@@ -133,7 +133,7 @@ module "ec2-nodes" {
 }
 
 # ec2 module
-module "baston-server" {
+module "baston_server" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "4.3.0"
 
@@ -145,7 +145,7 @@ module "baston-server" {
   monitoring             = true
   vpc_security_group_ids = [aws_security_group.baston_ssh_allow.id]
   subnet_id              = module.vpc.public_subnets[0] # stay in just one public subnet for now
-  iam_instance_profile   = aws_iam_instance_profile.baston-profile.name
+  iam_instance_profile   = aws_iam_instance_profile.baston_profile.name
 
   user_data = local.install_ansible
 
@@ -333,7 +333,7 @@ module "nlb" {
       target_type      = "instance"
       deregistration_delay  = 10
       load_balancing_cross_zone_enabled = false
-      targets = {for name in var.node_names : name => {target_id = module.ec2-nodes[name].id, port = 30050}}
+      targets = {for name in var.node_names : name => {target_id = module.ec2_nodes[name].id, port = 30050}}
     }
   ]
 
@@ -352,7 +352,7 @@ module "nlb" {
 }
 
 # elastic ip for nlb
-resource "aws_eip" "alb_ip" {
+resource "aws_eip" "nlb_ip" {
   tags = {
     Name = "easypay-ip"
     Terraform   = "true"
@@ -361,7 +361,7 @@ resource "aws_eip" "alb_ip" {
 }
 
 # ECR repository
-resource "aws_ecr_repository" "easypay-repo" {
+resource "aws_ecr_repository" "easypay_repo" {
   name                 = "easypay-repo"
   image_tag_mutability = "MUTABLE"
 
@@ -369,4 +369,20 @@ resource "aws_ecr_repository" "easypay-repo" {
   image_scanning_configuration {
     scan_on_push = false
   }
+}
+
+output "easypay_dns" {
+  value = aws_eip.nlb_ip.public_dns
+}
+
+output "cluster_dns" {
+  value = module.ec2_cp.public_dns
+}
+
+output "baston_ip" {
+  value = module.baston_server.public_ip
+}
+
+output "ecr_url" {
+  value = aws_ecr_repository.easypay_repo.repository_url
 }
