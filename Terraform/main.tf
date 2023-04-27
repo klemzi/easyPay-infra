@@ -4,7 +4,7 @@ locals {
   node_rules         = csvdecode(file("./configs/rules/node.csv"))
   cluster_ssh_key    = base64decode(file("./configs/pb-key/easypay"))
   baston_ssh_key     = base64decode(file("./configs/pb-key/baston"))
-  baston_role_policy = file("./configs/policies/ec2ReadOnlyAccess.json")
+  baston_role_policy = file("./configs/policies/ec2ReadOnlyECRAccess.json")
   install_ansible    = file("./configs/setups/ansible_install.sh")
   anywhere_ipv4      = "0.0.0.0/0"
   anywhere_ipv6      = "::/0"
