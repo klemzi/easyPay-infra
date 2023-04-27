@@ -376,7 +376,7 @@ output "easypay_dns" {
 }
 
 output "cluster_dns" {
-  value = module.ec2_cp.public_dns
+  value = module.ec2_cp[tolist(var.cp_names)[0]].public_dns
 }
 
 output "baston_ip" {
