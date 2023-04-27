@@ -281,6 +281,14 @@ resource "aws_security_group" "node_sg" {
   }
 
   ingress {
+    description     = "allow traffic to application"
+    from_port       = 30050
+    to_port         = 30050
+    protocol        = "tcp"
+    security_groups = [aws_security_group.baston_ssh_allow.id]    
+  }
+
+  ingress {
     description     = "allow ssh from baston"
     from_port       = 22
     to_port         = 22
@@ -315,21 +323,24 @@ module "nlb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "8.6.0"
 
-  name = "easypay-alb"
+  name = "easypay-nlb"
 
   load_balancer_type = "network"
 
   vpc_id = module.vpc.vpc_id
 
   subnet_mapping = [{
-    subnet_id     = module.vpc.public_subnets[0]
-    allocation_id = aws_eip.nlb_ip.id
+    subnet_id     = module.vpc.private_subnets[0]
+    allocation_id = aws_eip.nlb_ip_1.id
+  }, {
+    subnet_id     = module.vpc.private_subnets[1]
+    allocation_id = aws_eip.nlb_ip_2.id
   }]
 
   target_groups = [
     {
       backend_protocol                  = "TCP"
-      backend_port                      = 80
+      backend_port                      = 30050
       target_type                       = "instance"
       deregistration_delay              = 10
       load_balancing_cross_zone_enabled = false
@@ -352,9 +363,17 @@ module "nlb" {
 }
 
 # elastic ip for nlb
-resource "aws_eip" "nlb_ip" {
+resource "aws_eip" "nlb_ip_1" {
   tags = {
-    Name        = "easypay-ip"
+    Name        = "easypay-ip-1"
+    Terraform   = "true"
+    Environment = var.environment
+  }
+}
+
+resource "aws_eip" "nlb_ip_2" {
+  tags = {
+    Name        = "easypay-ip-2"
     Terraform   = "true"
     Environment = var.environment
   }
@@ -372,11 +391,11 @@ resource "aws_ecr_repository" "easypay_repo" {
 }
 
 output "easypay_dns" {
-  value = aws_eip.nlb_ip.public_dns
+  value = aws_eip.nlb_ip_1.public_dns
 }
 
 output "cluster_ip" {
-  value = module.ec2_cp[tolist(var.cp_names)[0]].private_ip
+  value = [module.ec2_cp[tolist(var.cp_names)[0]].private_ip]
 }
 
 output "baston_ip" {
