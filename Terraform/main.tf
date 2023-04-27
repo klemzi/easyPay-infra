@@ -393,11 +393,11 @@ resource "aws_ecr_repository" "easypay_repo" {
 }
 
 output "easypay_dns" {
-  value = aws_eip.nlb_ip_1.public_dns
+  value = [aws_eip.nlb_ip_1.public_dns, aws_eip.nlb_ip_2.public_dns]
 }
 
 output "cluster_ip" {
-  value = [module.ec2_cp[tolist(var.cp_names)[0]].private_ip]
+  value = module.ec2_cp[tolist(var.cp_names)[0]].private_ip
 }
 
 output "baston_ip" {
