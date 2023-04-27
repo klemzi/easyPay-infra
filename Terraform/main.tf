@@ -323,7 +323,7 @@ module "nlb" {
 
   subnet_mapping = [{
     subnet_id     = module.vpc.public_subnets[0]
-    allocation_id = aws_eip.alb_ip.id
+    allocation_id = aws_eip.nlb_ip.id
   }]
 
   target_groups = [
