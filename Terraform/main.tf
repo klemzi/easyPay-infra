@@ -98,7 +98,7 @@ module "ec2_cp" {
   instance_type          = var.cp_template.instance_type
   key_name               = aws_key_pair.ssh_key.key_name
   monitoring             = true
-  vpc_security_group_ids = [aws_security_group.cp_sg.id]
+  vpc_security_group_ids = [aws_security_group.cp_sg.id, aws_security_group.allow_bgp.id]
   subnet_id              = module.vpc.private_subnets[index(tolist(var.cp_names), each.value) % length(module.vpc.private_subnets)]
 
   tags = merge({
@@ -122,7 +122,7 @@ module "ec2_nodes" {
   instance_type          = var.node_template.instance_type
   key_name               = aws_key_pair.ssh_key.key_name
   monitoring             = true
-  vpc_security_group_ids = [aws_security_group.node_sg.id]
+  vpc_security_group_ids = [aws_security_group.node_sg.id, aws_security_group.allow_bgp.id]
   subnet_id              = var.node_public ? module.vpc.public_subnets[index(tolist(var.node_names), each.value) % length(module.vpc.public_subnets)] : module.vpc.private_subnets[index(tolist(var.node_names), each.value) % length(module.vpc.private_subnets)]
 
   tags = merge({
@@ -207,6 +207,27 @@ resource "aws_security_group" "cp_sg" {
     Name        = "allow_cp_ports"
     Terraform   = "true"
     Environment = var.environment
+  }
+}
+
+resource "aws_security_group" "allow_bgp" {
+  name = "allow-bgp"
+  description = "allow bgp for calico daemon sets"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "allow bgp"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
+    from_port   = 179
+    to_port     = 179
+    protocol    = "tcp"
+  }
+
+  egress {
+    cidr_blocks = [local.anywhere_ipv4]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
   }
 }
 
