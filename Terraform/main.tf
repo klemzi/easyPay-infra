@@ -210,33 +210,6 @@ resource "aws_security_group" "cp_sg" {
   }
 }
 
-resource "aws_security_group" "cp_http_allow" {
-  name        = "lb-allow-http"
-  description = "allow http to lb"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    description = "allow http to lb"
-    cidr_blocks = [local.anywhere_ipv4]
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-  }
-
-  egress {
-    cidr_blocks = [local.anywhere_ipv4]
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-  }
-
-  tags = {
-    Name        = "lb Public"
-    Terraform   = "true"
-    Environment = var.environment
-  }
-}
-
 resource "aws_security_group" "baston_ssh_allow" {
   name        = "baston-allow-ssh"
   description = "allow ssh to baston"
@@ -285,7 +258,7 @@ resource "aws_security_group" "node_sg" {
     from_port       = 30050
     to_port         = 30050
     protocol        = "tcp"
-    security_groups = [aws_security_group.baston_ssh_allow.id, aws_security_group.cp_http_allow.id]   
+    cidr_blocks = [local.anywhere_ipv4]
   }
 
   ingress {
@@ -330,14 +303,12 @@ module "nlb" {
   vpc_id = module.vpc.vpc_id
 
   subnet_mapping = [{
-    subnet_id     = module.vpc.private_subnets[0]
+    subnet_id     = module.vpc.public_subnets[0]
     allocation_id = aws_eip.nlb_ip_1.id
   }, {
-    subnet_id     = module.vpc.private_subnets[1]
+    subnet_id     = module.vpc.public_subnets[1]
     allocation_id = aws_eip.nlb_ip_2.id
   }]
-
-  security_groups = [ aws_security_group.cp_http_allow.id ]
 
   target_groups = [
     {
